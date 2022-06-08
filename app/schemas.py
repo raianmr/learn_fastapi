@@ -22,33 +22,37 @@ class PostCreate(PostBase):
 
 
 class PostRead(PostBase):
-    pass
+    class Config:
+        orm_mode = True
 
 
 class PostUpdate(PostBase):
     pass
 
 
-class UserBase(BaseModel):
+class User(BaseModel):
+    id: int
     email: EmailStr
     password: str
-
-
-class User(UserBase):
-    id: int
     created_at: datetime
 
     class Config:
         orm_mode = True
 
 
-class UserCreate(UserBase):
-    pass
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
 
 
-class UserRead(UserBase):
-    pass
+class UserRead(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
 
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
     pass
