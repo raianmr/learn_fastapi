@@ -9,6 +9,12 @@ from ..database import engine, get_db
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+@router.get("/", response_model=list[sc.UserRead])
+async def get_users(db: Session = Depends(get_db)):
+    users = db.query(mo.User).all()
+    return users
+
+
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.UserRead)
 async def create_users(u: sc.UserCreate, db: Session = Depends(get_db)):
     hashed_pass = ut.hash(u.password)

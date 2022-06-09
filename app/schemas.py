@@ -9,19 +9,14 @@ class PostBase(BaseModel):
     published: bool
 
 
-class Post(PostBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
 class PostCreate(PostBase):
     pass
 
 
 class PostRead(PostBase):
+    id: int
+    created_at: datetime
+
     class Config:
         orm_mode = True
 
@@ -30,19 +25,13 @@ class PostUpdate(PostBase):
     pass
 
 
-class User(BaseModel):
-    id: int
+class UserBase(BaseModel):
     email: EmailStr
     password: str
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
 
 
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
+class UserCreate(UserBase):
+    pass
 
 
 class UserRead(BaseModel):
@@ -54,5 +43,9 @@ class UserRead(BaseModel):
         orm_mode = True
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(UserBase):
+    pass
+
+
+class UserLogin(UserBase):
     pass

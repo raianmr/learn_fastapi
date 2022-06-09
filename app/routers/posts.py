@@ -8,13 +8,14 @@ from ..database import engine, get_db
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
-@router.get("/", response_model=list[sc.Post])
+
+@router.get("/", response_model=list[sc.PostRead])
 async def get_posts(db: Session = Depends(get_db)):
     posts = db.query(mo.Post).all()
     return posts
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.Post)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.PostRead)
 async def create_posts(p: sc.PostCreate, db: Session = Depends(get_db)):
     new_post = mo.Post(**p.dict())
     db.add(new_post)
@@ -24,7 +25,7 @@ async def create_posts(p: sc.PostCreate, db: Session = Depends(get_db)):
     return new_post
 
 
-@router.get("/{id}", response_model=sc.Post)
+@router.get("/{id}", response_model=sc.PostRead)
 async def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(mo.Post).filter(mo.Post.id == id).first()
 
@@ -53,7 +54,7 @@ async def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.put("/{id}", response_model=sc.Post)
+@router.put("/{id}", response_model=sc.PostRead)
 async def update_post(id: int, up: sc.PostUpdate, db: Session = Depends(get_db)):
     q = db.query(mo.Post).filter(mo.Post.id == id)
 
