@@ -4,19 +4,28 @@ from sqlalchemy.orm import Session
 from .. import models as mo
 from .. import schemas as sc
 from .. import utils as ut
+from .. import oauth2 as o2
+
 from ..database import engine, get_db
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=list[sc.PostRead])
-async def get_posts(db: Session = Depends(get_db)):
+async def get_posts(
+    db: Session = Depends(get_db),
+    user_id: int = Depends(o2.get_current_user),
+):
     posts = db.query(mo.Post).all()
     return posts
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.PostRead)
-async def create_posts(p: sc.PostCreate, db: Session = Depends(get_db)):
+async def create_posts(
+    p: sc.PostCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(o2.get_current_user),
+):
     new_post = mo.Post(**p.dict())
     db.add(new_post)
     db.commit()
@@ -26,7 +35,11 @@ async def create_posts(p: sc.PostCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=sc.PostRead)
-async def get_post(id: int, db: Session = Depends(get_db)):
+async def get_post(
+    id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(o2.get_current_user),
+):
     post = db.query(mo.Post).filter(mo.Post.id == id).first()
 
     if not post:
@@ -39,7 +52,11 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id: int, db: Session = Depends(get_db)):
+async def delete_post(
+    id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(o2.get_current_user),
+):
     q = db.query(mo.Post).filter(mo.Post.id == id)
 
     if not q.first():
@@ -55,7 +72,12 @@ async def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=sc.PostRead)
-async def update_post(id: int, up: sc.PostUpdate, db: Session = Depends(get_db)):
+async def update_post(
+    id: int,
+    up: sc.PostUpdate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(o2.get_current_user),
+):
     q = db.query(mo.Post).filter(mo.Post.id == id)
 
     if not q.first():
