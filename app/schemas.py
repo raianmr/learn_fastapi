@@ -15,6 +15,7 @@ class PostCreate(PostBase):
 
 class PostRead(PostBase):
     id: int
+    owner_id: int
     created_at: datetime
 
     class Config:

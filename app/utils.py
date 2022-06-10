@@ -8,5 +8,5 @@ def hash(password: str) -> str:
     return pass_ctx.hash(password)
 
 
-def verify(plain_password: str, hashed_password: str) -> bool:
+def verify(plain_password, hashed_password) -> bool:
     return pass_ctx.verify(plain_password, hashed_password)

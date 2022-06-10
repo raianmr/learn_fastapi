@@ -14,55 +14,65 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 @router.get("/", response_model=list[sc.PostRead])
 async def get_posts(
     db: Session = Depends(get_db),
-    user_id: int = Depends(o2.get_current_user),
+    curr_u: mo.User = Depends(o2.get_current_user),
 ):
-    posts = db.query(mo.Post).all()
-    return posts
+    q = db.query(mo.Post)
+    all_p: list[mo.Post] = q.all()
+
+    return all_p
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.PostRead)
 async def create_posts(
     p: sc.PostCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(o2.get_current_user),
+    curr_u: mo.User = Depends(o2.get_current_user),
 ):
-    new_post = mo.Post(**p.dict())
-    db.add(new_post)
+    new_p = mo.Post(owner_id=curr_u.id, **p.dict())
+    db.add(new_p)
     db.commit()
-    db.refresh(new_post)
+    db.refresh(new_p)
 
-    return new_post
+    return new_p
 
 
 @router.get("/{id}", response_model=sc.PostRead)
 async def get_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(o2.get_current_user),
+    curr_u: mo.User = Depends(o2.get_current_user),
 ):
-    post = db.query(mo.Post).filter(mo.Post.id == id).first()
+    q = db.query(mo.Post).filter(mo.Post.id == id)
+    p: mo.Post | None = q.first()
 
-    if not post:
+    if not p:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id {id} was not found",
         )
 
-    return post
+    return p
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(o2.get_current_user),
+    curr_u: mo.User = Depends(o2.get_current_user),
 ):
     q = db.query(mo.Post).filter(mo.Post.id == id)
+    p: mo.Post | None = q.first()
 
-    if not q.first():
+    if not p:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id {id} was not found",
+        )
+
+    if p.owner_id != curr_u.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not authorized to perform requested action",
         )
 
     q.delete()  # TODO read docs about the synchronize_session parameter
@@ -76,17 +86,24 @@ async def update_post(
     id: int,
     up: sc.PostUpdate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(o2.get_current_user),
+    curr_u: mo.User = Depends(o2.get_current_user),
 ):
     q = db.query(mo.Post).filter(mo.Post.id == id)
+    p: mo.Post | None = q.first()
 
-    if not q.first():
+    if not p:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id {id} was not found",
         )
 
+    if p.owner_id != curr_u.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not authorized to perform requested action",
+        )
+
     q.update(up.dict())
     db.commit()
 
-    return q.first()
+    return p

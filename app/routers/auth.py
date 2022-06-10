@@ -16,7 +16,9 @@ router = APIRouter(prefix="/login", tags=["Authentication"])
 async def login(
     creds: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
-    user = db.query(mo.User).filter(mo.User.email == creds.username).first()
+    user: mo.User | None = (
+        db.query(mo.User).filter(mo.User.email == creds.username).first()
+    )
 
     if not user:
         raise HTTPException(
