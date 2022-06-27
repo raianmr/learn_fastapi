@@ -1,6 +1,5 @@
 from passlib.context import CryptContext
 
-
 pass_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
