@@ -2,7 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://fapi_lrnr:fapi_lrnr@localhost:5432/fapi_lrn"
+from .config import settings as se
+
+SQLALCHEMY_DATABASE_URL = (
+    f"{se.db_type}://{se.db_user}:{se.db_pass}@{se.db_host}:{se.db_port}/{se.db_name}"
+)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 

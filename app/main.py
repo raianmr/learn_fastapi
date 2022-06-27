@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from . import models as mo
+from .config import settings as se
 from .database import engine
 from .routers import auth, posts, users
 

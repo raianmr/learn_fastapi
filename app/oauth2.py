@@ -1,20 +1,19 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from . import models as mo
-from . import oauth2 as o2
 from . import schemas as sc
-from . import utils as ut
-from .database import engine, get_db
+from .config import settings as se
+from .database import get_db
 
 # openssl rand -hex 32
-SECRET_KEY = "506caee9dc16a930c2a84ae7927d958749f43f04686fbee73ba6aa275607fb8e"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3600
+SECRET_KEY = se.secret_key
+ALGORITHM = se.hash_algo
+ACCESS_TOKEN_EXPIRE_MINUTES = se.dur_in_mins
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")

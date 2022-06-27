@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from .. import models as mo
 from .. import oauth2 as o2
 from .. import schemas as sc
-from .. import utils as ut
-from ..database import engine, get_db
+from ..database import get_db
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
