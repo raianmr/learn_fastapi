@@ -17,8 +17,6 @@ async def get_posts(
     skip: int = 0,
     search: str = "",
 ):
-    print(limit)
-
     q = (
         db.query(mo.Post)
         .filter(mo.Post.title.contains(search))
@@ -31,7 +29,7 @@ async def get_posts(
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.PostRead)
-async def create_posts(
+async def create_post(
     p: sc.PostCreate,
     db: Session = Depends(get_db),
     curr_u: mo.User = Depends(o2.get_current_user),

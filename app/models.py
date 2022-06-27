@@ -1,5 +1,13 @@
-from sqlalchemy import (TIMESTAMP, Boolean, Column, ForeignKey, Integer,
-                        String, text)
+from sqlalchemy import (
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    text,
+)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -20,6 +28,7 @@ class Post(Base):
 
     owner = relationship("User")
 
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, nullable=False)
@@ -28,3 +37,22 @@ class User(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    post_id = Column(
+        Integer,
+        ForeignKey("posts.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    is_upvote = Column(
+        Boolean, server_default="TRUE", nullable=False
+    )  # cant use enums here because sqlalchemy cant store enum values as integers for some reason

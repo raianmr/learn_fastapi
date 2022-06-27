@@ -18,7 +18,7 @@ async def get_users(db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.UserRead)
-async def create_users(u: sc.UserCreate, db: Session = Depends(get_db)):
+async def create_user(u: sc.UserCreate, db: Session = Depends(get_db)):
     q = db.query(mo.User).filter(mo.User.email == u.email)
     existing_u: mo.User | None = q.first()
 
