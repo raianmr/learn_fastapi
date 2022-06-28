@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum, unique
 from pydantic import BaseModel, EmailStr
 
 
@@ -57,36 +56,34 @@ class PostRead(PostBase):
     class Config:
         orm_mode = True
 
+class PostWithVotes(BaseModel):
+    Post: PostRead
+    score: int
 
 class PostUpdate(PostBase):
     pass
 
 
-@unique
-class Direction(IntEnum):
-    UPVOTE = 1
-    DOWNVOTE = -1
-
-
 class VoteBase(BaseModel):
     post_id: int
     user_id: int
-    dir: Direction
 
 
-class VoteCreate(VoteBase):
-    pass
-
-
-class VoteRead(BaseModel):
+class VoteCreate(BaseModel):
     post_id: int
-    user_id: int
+    is_upvote: bool
+
+
+class VoteRead(VoteBase):
     is_upvote: bool
 
     class Config:
         orm_mode = True
-        # use_enum_values = True  # unsure if needed
 
 
-class VoteUpdate(VoteBase):
+class VoteUpdate(VoteCreate):
     pass
+
+
+class VoteDelete(BaseModel):
+    post_id: int

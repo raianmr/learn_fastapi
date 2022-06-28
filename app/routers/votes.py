@@ -9,7 +9,7 @@ from ..database import get_db
 router = APIRouter(prefix="/votes", tags=["Votes"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=sc.VoteRead)
 async def cast_vote(
     v: sc.VoteCreate,
     db: Session = Depends(get_db),
@@ -23,16 +23,12 @@ async def cast_vote(
     if old_v:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"user {v.user_id} has already casted a vote on post {v.post_id}",
+            detail=f"user {curr_u.id} (currently logged in) has already casted a vote on post {v.post_id}",
         )
 
-    new_v_dict = {"post_id": v.post_id, "user_id": curr_u.id}
-    if v.dir == sc.Direction.UPVOTE:
-        new_v_dict["is_upvote"] = True
-    elif v.dir == sc.Direction.DOWNVOTE:
-        new_v_dict["is_upvote"] = False
+    # TODO raise when post not found
 
-    new_v = mo.Vote(**new_v_dict)
+    new_v = mo.Vote(user_id=curr_u.id, **v.dict())
     db.add(new_v)
     db.commit()
     db.refresh(new_v)
@@ -42,7 +38,7 @@ async def cast_vote(
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def uncast_vote(
-    v: sc.VoteCreate,
+    v: sc.VoteDelete,
     db: Session = Depends(get_db),
     curr_u: mo.User = Depends(o2.get_current_user),
 ):
@@ -54,13 +50,7 @@ async def uncast_vote(
     if not old_v:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"user {v.user_id} didn't cast a vote on post {v.post_id}",
-        )
-
-    if v.user_id != curr_u.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="not authorized to perform requested action",
+            detail=f"user {curr_u.id} (currently logged in) didn't cast a vote on post {v.post_id}",
         )
 
     q.delete()

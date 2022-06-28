@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import func, case
 from sqlalchemy.orm import Session
 
 from .. import models as mo
@@ -9,7 +10,7 @@ from ..database import get_db
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
-@router.get("/", response_model=list[sc.PostRead])
+@router.get("/", response_model=list[sc.PostWithVotes])
 async def get_posts(
     db: Session = Depends(get_db),
     curr_u: mo.User = Depends(o2.get_current_user),
@@ -18,12 +19,23 @@ async def get_posts(
     search: str = "",
 ):
     q = (
-        db.query(mo.Post)
+        db.query(
+            mo.Post,
+            func.sum(
+                case(
+                    (mo.Vote.is_upvote == True, 1),
+                    (mo.Vote.is_upvote == False, -1),
+                    else_=0,
+                )
+            ).label("score"),
+        )
+        .outerjoin(mo.Vote, mo.Vote.post_id == mo.Post.id)
+        .group_by(mo.Post.id)
         .filter(mo.Post.title.contains(search))
         .limit(limit)
         .offset(skip)
     )
-    all_p: list[mo.Post] = q.all()
+    all_p = q.all()
 
     return all_p
 
@@ -42,14 +54,28 @@ async def create_post(
     return new_p
 
 
-@router.get("/{id}", response_model=sc.PostRead)
+@router.get("/{id}", response_model=sc.PostWithVotes)
 async def get_post(
     id: int,
     db: Session = Depends(get_db),
     curr_u: mo.User = Depends(o2.get_current_user),
 ):
-    q = db.query(mo.Post).filter(mo.Post.id == id)
-    p: mo.Post | None = q.first()
+    q = (
+        db.query(
+            mo.Post,
+            func.sum(
+                case(
+                    (mo.Vote.is_upvote == True, 1),
+                    (mo.Vote.is_upvote == False, -1),
+                    else_=0,
+                )
+            ).label("score"),
+        )
+        .outerjoin(mo.Vote, mo.Vote.post_id == mo.Post.id)
+        .group_by(mo.Post.id)
+        .filter(mo.Post.id == id)
+    )
+    p = q.first()
 
     if not p:
         raise HTTPException(
