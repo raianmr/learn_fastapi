@@ -1,13 +1,4 @@
-from sqlalchemy import (
-    TIMESTAMP,
-    Boolean,
-    Column,
-    Enum,
-    ForeignKey,
-    Integer,
-    String,
-    text,
-)
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, text
 from sqlalchemy.orm import relationship
 
 from .database import Base
