@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+# remember to docker compose exec api alembic upgrade head
+  api: 
+    build: .
+    ports:
+      - 80:8000
+    environment:
+    # https://docs.docker.com/compose/environment-variables/#:~:text=You%20can%20set%20default%20values%20for%20environment%20variables%20using%20a%20.env%20file%2C%20which%20Compose%20automatically%20looks%20for%20in%20project%20directory%20(parent%20folder%20of%20your%20Compose%20file).%20Values%20set%20in%20the%20shell%20environment%20override%20those%20set%20in%20the%20.env%20file.
+    # https://github.com/docker-library/postgres/issues/474#issuecomment-416914741
+      - DB_HOST=postgres 
+      - DB_TYPE=${DB_TYPE}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_PASS=${DB_PASS}
+      - DB_USER=${DB_USER}
+      - DUR_IN_MINS=${DUR_IN_MINS}
+      - SECRET_KEY=${SECRET_KEY}
+      - HASH_ALGO=${HASH_ALGO}
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
+
