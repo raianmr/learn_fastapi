@@ -15,6 +15,15 @@ async def cast_vote(
     db: Session = Depends(get_db),
     curr_u: mo.User = Depends(o2.get_current_user),
 ):
+    q = db.query(mo.Post).filter(mo.Post.id == v.post_id)
+    p: mo.Post | None = q.first()
+
+    if not p:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"post with id {id} was not found",
+        )
+
     q = db.query(mo.Vote).filter(
         mo.Vote.user_id == curr_u.id, mo.Vote.post_id == v.post_id
     )
